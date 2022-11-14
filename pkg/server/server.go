@@ -9,18 +9,17 @@ type Server struct {
 	http.Handler
 }
 
+type Config struct {
+	ScoreboardRoute scoreboard.Route
+}
+
 // New creates a server with routes configured
-func New() *Server {
+func New(cfg Config) *Server {
 	s := new(Server)
 	router := http.NewServeMux()
 
-	createScoreboardRoutes("/scoreboard", router)
+	router.HandleFunc("/scoreboard", cfg.ScoreboardRoute.ScoreboardRouteHandler)
+
 	s.Handler = router
-
 	return s
-}
-
-func createScoreboardRoutes(route string, router *http.ServeMux) {
-	router.HandleFunc(route, scoreboard.FetchScoreboardRoute)
-
 }
