@@ -2,9 +2,11 @@ package scoreboard
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
+	"tour-le-shit-go/internal/errors"
 	"tour-le-shit-go/internal/players"
 )
 
@@ -28,18 +30,16 @@ type Route struct {
 	s players.Service
 }
 
-func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Request) {
+func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Request) error {
 	season := r.URL.Query().Get("season")
 	sint, err := strconv.Atoi(season)
 	if err != nil {
-		http.Error(w, "invalid season query param, expected integer got '"+season+"'", 400)
-		return
+		return errors.HttpError{Code: 400, Message: fmt.Sprintf("invalid season query param, expected integer got %s", season)}
 	}
 	p, err := route.s.GetScoreBySeason(sint)
 
 	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
+		return errors.HttpError{Code: 500, Message: "server error, please contact support", InnerError: err.Error()}
 	}
 
 	sort.Slice(p, func(i, j int) bool {
@@ -57,4 +57,5 @@ func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Reques
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(Scoreboard{Season: sint, Players: slice})
+	return nil
 }
