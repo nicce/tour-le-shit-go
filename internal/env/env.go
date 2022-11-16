@@ -4,12 +4,13 @@ import "os"
 
 type AppEnv struct {
 	ScoreboardMode string
+	Port           string
 }
 
-func getEnvVariable(key, d string) string {
+func getEnvVariable(key string) string {
 	v, ok := os.LookupEnv(key)
 	if !ok {
-		return d
+		panic("missing env variable: " + key)
 	}
 
 	return v
@@ -17,6 +18,7 @@ func getEnvVariable(key, d string) string {
 
 func GetAppEnv() AppEnv {
 	return AppEnv{
-		ScoreboardMode: getEnvVariable("SCOREBOARD_MODE", "MOCK"),
+		ScoreboardMode: getEnvVariable("SCOREBOARD_MODE"),
+		Port:           getEnvVariable("PORT"),
 	}
 }

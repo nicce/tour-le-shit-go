@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
@@ -12,8 +11,6 @@ import (
 	"tour-le-shit-go/pkg/server"
 )
 
-const port = ":4000"
-
 func main() {
 	err := godotenv.Load(".env", ".env.default")
 	if err != nil {
@@ -21,7 +18,6 @@ func main() {
 	}
 
 	appEnv := env.GetAppEnv()
-	fmt.Print(appEnv.ScoreboardMode)
 
 	var repository players.Repository
 	if appEnv.ScoreboardMode == "FILE" {
@@ -37,5 +33,5 @@ func main() {
 		ScoreboardRoute: scoreboardRoute,
 	}
 	srv := server.New(config)
-	log.Fatal(http.ListenAndServe(port, srv))
+	log.Fatal(http.ListenAndServe(":"+appEnv.Port, srv))
 }
