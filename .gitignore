@@ -4,5 +4,7 @@ gin-bin
 # idea
 .idea
 
+.env
+
 # Binary
 tour-le-shit-go

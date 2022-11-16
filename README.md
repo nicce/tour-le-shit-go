@@ -16,3 +16,11 @@ For running the app with live reload support use [air](https://github.com/cosmtr
 ### Build
 
 `go build`
+
+## Environment variable
+
+For convenient use `.env` file in root folder. Check `.env.default` for default values
+
+| key             | description  |
+|-----------------|--------------|
+| SCOREBOARD_MODE | FILE or PSQL |
