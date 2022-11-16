@@ -1,5 +1,7 @@
 # Tour le shit in GO
 
+![workflow](https://github.com/nicce/tour-le-shit-go/actions/workflows/main.yaml/badge.svg)
+
 Implementation of the infamous [Tour le shit](https://github.com/nicce/tour-le-shit) backend using GoLang.
 
 ## Development
