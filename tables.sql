@@ -10,7 +10,7 @@ CREATE TABLE scoreboard (
 	holder_of_snek BOOLEAN,
 	last_played VARCHAR(10),
 	season INT,
-	FOREIGN KEY(player_id) REFERENCES player(id)
+	FOREIGN KEY(player_id) REFERENCES player(id) ON DELETE CASCADE
 );
 
 CREATE TABLE score (
@@ -23,5 +23,5 @@ CREATE TABLE score (
 	muligans INT,
 	day VARCHAR(10),
 	seasont INT,
-	FOREIGN KEY(player_id) REFERENCES player(id)
+	FOREIGN KEY(player_id) REFERENCES player(id) ON DELETE CASCADE
 );

@@ -7,7 +7,7 @@ import (
 	playersModel "tour-le-shit-go/internal/players/model"
 )
 
-const GET_SCOREBOARD_QUERY = `
+const GetScoreboardQuery = `
 	SELECT s.points, p.name, p.id, s.last_played 
 	from scoreboard s inner join player p ON(s.player_id = p.id) 
 	WHERE season = $1;`
@@ -16,12 +16,12 @@ type PostgresRepository struct {
 	db *sql.DB
 }
 
-func NewRepository(db *sql.DB) PostgresRepository {
-	return PostgresRepository{db: db}
+func NewRepository(db *sql.DB) *PostgresRepository {
+	return &PostgresRepository{db: db}
 }
 
-func (r PostgresRepository) GetScore(season int) ([]model.PlayerScore, error) {
-	stmt, err := r.db.Prepare(GET_SCOREBOARD_QUERY)
+func (r *PostgresRepository) GetScore(season int) ([]model.PlayerScore, error) {
+	stmt, err := r.db.Prepare(GetScoreboardQuery)
 	if err != nil {
 		return nil, ierrors.DbError{
 			Message: "Error preparing statement from db " + err.Error(),
@@ -36,7 +36,7 @@ func (r PostgresRepository) GetScore(season int) ([]model.PlayerScore, error) {
 		}
 	}
 
-	p, err := getPlayers(rows)
+	p, err := getPlayerScores(rows)
 	if err != nil {
 		return nil, ierrors.DbError{
 			Message: "Error parsing result from db " + err.Error(),
@@ -46,8 +46,8 @@ func (r PostgresRepository) GetScore(season int) ([]model.PlayerScore, error) {
 	return p, nil
 }
 
-func getPlayers(rows *sql.Rows) ([]model.PlayerScore, error) {
-	players := make([]model.PlayerScore, 0)
+func getPlayerScores(rows *sql.Rows) ([]model.PlayerScore, error) {
+	playerScores := make([]model.PlayerScore, 0)
 
 	for rows.Next() {
 		var points int
@@ -66,7 +66,7 @@ func getPlayers(rows *sql.Rows) ([]model.PlayerScore, error) {
 			}
 		}
 
-		players = append(players, model.PlayerScore{
+		playerScores = append(playerScores, model.PlayerScore{
 			Player: playersModel.Player{
 				Id:   id,
 				Name: name,
@@ -76,5 +76,5 @@ func getPlayers(rows *sql.Rows) ([]model.PlayerScore, error) {
 		})
 	}
 
-	return players, nil
+	return playerScores, nil
 }
