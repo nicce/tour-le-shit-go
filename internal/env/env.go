@@ -3,8 +3,9 @@ package env
 import "os"
 
 type AppEnv struct {
-	ScoreboardMode string
+	MembersMode    string
 	Port           string
+	ScoreboardMode string
 }
 
 func getEnvVariable(key string) string {
@@ -18,7 +19,8 @@ func getEnvVariable(key string) string {
 
 func GetAppEnv() AppEnv {
 	return AppEnv{
-		ScoreboardMode: getEnvVariable("SCOREBOARD_MODE"),
+		MembersMode:    getEnvVariable("MEMBERS_MODE"),
 		Port:           getEnvVariable("PORT"),
+		ScoreboardMode: getEnvVariable("SCOREBOARD_MODE"),
 	}
 }

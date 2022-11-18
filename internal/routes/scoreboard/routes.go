@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
-	"tour-le-shit-go/internal/errors"
-	"tour-le-shit-go/internal/players"
+	"tour-le-shit-go/internal/game"
+	"tour-le-shit-go/internal/ierrors"
 )
 
 type Scoreboard struct {
@@ -22,24 +22,26 @@ type Player struct {
 	LastPlayed string `json:"lastPlayed"`
 }
 
-func NewScoreboardRoute(s players.Service) Route {
+func NewScoreboardRoute(s game.Service) Route {
 	return Route{s}
 }
 
 type Route struct {
-	s players.Service
+	s game.Service
 }
 
 func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Request) error {
 	season := r.URL.Query().Get("season")
+
 	sint, err := strconv.Atoi(season)
 	if err != nil {
-		return errors.HttpError{Code: 400, Message: fmt.Sprintf("invalid season query param, expected integer got %s", season)}
+		return ierrors.HttpError{Code: ierrors.BadRequestStatusCode, Message: fmt.Sprintf("invalid season query param, expected integer got %s", season)}
 	}
+
 	p, err := route.s.GetScoreBySeason(sint)
 
 	if err != nil {
-		return errors.HttpError{Code: 500, Message: "server error, please contact support", InnerError: err.Error()}
+		return ierrors.HttpError{Code: ierrors.ServerErrorStatusCode, Message: "server error, please contact support", InnerError: err.Error()}
 	}
 
 	sort.Slice(p, func(i, j int) bool {
@@ -47,15 +49,21 @@ func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Reques
 	})
 
 	slice := make([]Player, 0)
-	for i, player := range p {
+	for i, playerScore := range p {
 		slice = append(slice, Player{
-			Name:       player.Name,
-			Points:     player.Points,
+			Name:       playerScore.Player.Name,
+			Points:     playerScore.Points,
 			Position:   i + 1,
-			LastPlayed: player.LastPlayed,
+			LastPlayed: playerScore.LastPlayed,
 		})
 	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(Scoreboard{Season: sint, Players: slice})
+
+	err = json.NewEncoder(w).Encode(Scoreboard{Season: sint, Players: slice})
+	if err != nil {
+		return fmt.Errorf("unknown error %w", err)
+	}
+
 	return nil
 }

@@ -25,4 +25,6 @@ For convenient use `.env` file in root folder. Check `.env.default` for default 
 
 | key             | description  |
 |-----------------|--------------|
-| SCOREBOARD_MODE | FILE or PSQL |
+| MEMBERS_MODE    | MOCK or PSQL |
+| PORT            | Server port  |
+| SCOREBOARD_MODE | MOCK or PSQL |

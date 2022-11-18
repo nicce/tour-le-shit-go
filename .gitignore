@@ -1,10 +1,11 @@
-# gin hot reloading
-gin-bin
+# air hot reloading folder
+tmp/
 
 # idea
 .idea
 
 .env
+bin/
 
 # Binary
 tour-le-shit-go
