@@ -2,15 +2,15 @@ package file
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
 	"os"
-	"tour-le-shit-go/internal/players/model"
+	"tour-le-shit-go/internal/game/model"
+	"tour-le-shit-go/internal/ierrors"
 )
 
 type scoreboard struct {
 	Season  int      `json:"season"`
-	Players []player `json:"players"`
+	Players []player `json:"game"`
 }
 
 type player struct {
@@ -29,24 +29,25 @@ func NewRepository(filePath string) *JSONFileRepository {
 
 func (r *JSONFileRepository) GetScore(season int) ([]model.Player, error) {
 	file, err := os.Open(r.path)
-	defer file.Close()
 
 	if err != nil {
-		return nil, errors.New("failed to fetch file: " + err.Error())
+		return nil, ierrors.DbError{Message: "failed to fetch file: " + err.Error()}
 	}
 
 	byteValue, err := io.ReadAll(file)
 	if err != nil {
-		return nil, errors.New("failed to read file: " + err.Error())
+		return nil, ierrors.DbError{Message: "failed to read file: " + err.Error()}
 	}
 
 	var sbs []scoreboard
+
 	err = json.Unmarshal(byteValue, &sbs)
 	if err != nil {
-		return nil, errors.New("failed to convert file content to struct: " + err.Error())
+		return nil, ierrors.DbError{Message: "failed to convert file content to struct: " + err.Error()}
 	}
 
 	result := make([]model.Player, 0)
+
 	for _, sb := range sbs {
 		if sb.Season == season {
 			for _, p := range sb.Players {

@@ -1,14 +1,24 @@
 package main
 
 import (
-	"github.com/joho/godotenv"
+	"database/sql"
+	"fmt"
 	"log"
-	"net/http"
 	"tour-le-shit-go/internal/env"
+	"tour-le-shit-go/internal/game"
+	gameDb "tour-le-shit-go/internal/game/db"
+	gameFile "tour-le-shit-go/internal/game/file"
+	gameMock "tour-le-shit-go/internal/game/mock"
+	gameModel "tour-le-shit-go/internal/game/model"
 	"tour-le-shit-go/internal/players"
-	"tour-le-shit-go/internal/players/file"
+	playersMock "tour-le-shit-go/internal/players/mock"
+	playersModel "tour-le-shit-go/internal/players/model"
+	"tour-le-shit-go/internal/routes/members"
 	"tour-le-shit-go/internal/routes/scoreboard"
 	"tour-le-shit-go/pkg/server"
+
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -19,19 +29,62 @@ func main() {
 
 	appEnv := env.GetAppEnv()
 
-	var repository players.Repository
-	if appEnv.ScoreboardMode == "FILE" {
-		repository = file.NewRepository("players.json")
-	} else if appEnv.ScoreboardMode == "PSQL" {
-		repository = file.NewRepository("players.json")
-	}
-
-	service := players.NewService(repository)
-	scoreboardRoute := scoreboard.NewScoreboardRoute(service)
+	scoreboardRoute := createScoreboardRoute(appEnv)
+	membersRoute := createMembersRoute(appEnv)
 
 	config := server.Config{
 		ScoreboardRoute: scoreboardRoute,
+		Port:            appEnv.Port,
+		MembersRoute:    membersRoute,
 	}
+
 	srv := server.New(config)
-	log.Fatal(http.ListenAndServe(":"+appEnv.Port, srv))
+
+	err = srv.ListenAndServe()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func createScoreboardRoute(appEnv env.AppEnv) scoreboard.Route {
+	var repository game.Repository
+
+	switch appEnv.ScoreboardMode {
+	case "FILE":
+		repository = gameFile.NewRepository("game.json")
+	case "PSQL":
+		database, err := sql.Open("postgres", "user=user dbname=tourleshit password=password sslmode=disable")
+		if err != nil {
+			panic(err)
+		}
+
+		repository = gameDb.NewRepository(database)
+	case "MOCK":
+		repository = gameMock.NewRepository([]gameModel.Player{})
+	default:
+		panic(fmt.Sprintf("invalid scoreboard mode %s", appEnv.ScoreboardMode))
+	}
+
+	service := game.NewService(repository)
+
+	return scoreboard.NewScoreboardRoute(service)
+}
+
+func createMembersRoute(appEnv env.AppEnv) members.Route {
+	var repository players.Repository
+
+	switch appEnv.MembersMode {
+	case "FILE":
+		panic("not yet implemented")
+	case "PSQL":
+		panic("not yet implemented")
+	case "MOCK":
+		repository = playersMock.NewRepository([]playersModel.Player{})
+	default:
+		panic(fmt.Sprintf("invalid members mode %s", appEnv.MembersMode))
+	}
+
+	service := players.NewService(repository)
+
+	return members.NewMemberRoute(service)
 }

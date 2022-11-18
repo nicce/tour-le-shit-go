@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
-	"tour-le-shit-go/internal/errors"
-	"tour-le-shit-go/internal/players"
+	"tour-le-shit-go/internal/game"
+	"tour-le-shit-go/internal/ierrors"
 )
 
 type Scoreboard struct {
 	Season  int      `json:"season"`
-	Players []Player `json:"players"`
+	Players []Player `json:"game"`
 }
 
 type Player struct {
@@ -22,24 +22,26 @@ type Player struct {
 	LastPlayed string `json:"lastPlayed"`
 }
 
-func NewScoreboardRoute(s players.Service) Route {
+func NewScoreboardRoute(s game.Service) Route {
 	return Route{s}
 }
 
 type Route struct {
-	s players.Service
+	s game.Service
 }
 
 func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Request) error {
 	season := r.URL.Query().Get("season")
+
 	sint, err := strconv.Atoi(season)
 	if err != nil {
-		return errors.HttpError{Code: 400, Message: fmt.Sprintf("invalid season query param, expected integer got %s", season)}
+		return ierrors.HttpError{Code: ierrors.BadRequestStatusCode, Message: fmt.Sprintf("invalid season query param, expected integer got %s", season)}
 	}
+
 	p, err := route.s.GetScoreBySeason(sint)
 
 	if err != nil {
-		return errors.HttpError{Code: 500, Message: "server error, please contact support", InnerError: err.Error()}
+		return ierrors.HttpError{Code: ierrors.ServerErrorStatusCode, Message: "server error, please contact support", InnerError: err.Error()}
 	}
 
 	sort.Slice(p, func(i, j int) bool {
@@ -55,7 +57,13 @@ func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Reques
 			LastPlayed: player.LastPlayed,
 		})
 	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(Scoreboard{Season: sint, Players: slice})
+
+	err = json.NewEncoder(w).Encode(Scoreboard{Season: sint, Players: slice})
+	if err != nil {
+		return fmt.Errorf("unknown error %w", err)
+	}
+
 	return nil
 }

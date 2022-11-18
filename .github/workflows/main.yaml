@@ -30,11 +30,11 @@ jobs:
                 go-version: '1.19' # The Go version to download (if necessary) and use.
 
             - name: Build
-              run: go build
+              run: make build
 
-            - name: Vet
+            - name: Lint
               run: |
-                go vet -v ./...
+                make lint
 
             - name: Test
-              run: go test -v ./...
+              run: make test

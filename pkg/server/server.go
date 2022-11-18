@@ -1,11 +1,16 @@
 package server
 
 import (
+	"errors"
 	"log"
 	"net/http"
-	"tour-le-shit-go/internal/errors"
+	"time"
+	"tour-le-shit-go/internal/ierrors"
 	"tour-le-shit-go/internal/logger"
+	"tour-le-shit-go/internal/routes/members"
 	"tour-le-shit-go/internal/routes/scoreboard"
+
+	"github.com/gorilla/mux"
 )
 
 type Server struct {
@@ -13,20 +18,33 @@ type Server struct {
 }
 
 type Config struct {
+	MembersRoute    members.Route
+	Port            string
 	ScoreboardRoute scoreboard.Route
 }
 
 type rootHandler func(http.ResponseWriter, *http.Request) error
 
-// New creates a server with routes configured
-func New(cfg Config) *Server {
+const Timeout = 5 * time.Second
+
+// New creates a http.Server with routes configured.
+func New(cfg Config) *http.Server {
 	s := new(Server)
-	router := http.NewServeMux()
+	router := mux.NewRouter()
 
 	router.Handle("/scoreboard", rootHandler(cfg.ScoreboardRoute.ScoreboardRouteHandler))
+	router.Handle("/members/{id}", rootHandler(cfg.MembersRoute.MemberRouteHandler))
+	router.Handle("/members", rootHandler(cfg.MembersRoute.MembersRouteHandler))
 
 	s.Handler = logger.RequestLogger(router)
-	return s
+
+	srv := &http.Server{
+		Addr:              ":" + cfg.Port,
+		Handler:           s.Handler,
+		ReadHeaderTimeout: Timeout,
+	}
+
+	return srv
 }
 
 func (fn rootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -34,15 +52,23 @@ func (fn rootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		return
 	}
-	log.Printf("an error occured %v", err)
-	w.Header().Set("content-type", "application/problem+json")
-	httpError, ok := err.(errors.HttpError)
-	if !ok {
-		w.WriteHeader(500)
-		return
 
+	log.Printf("an error occurred %v", err)
+	w.Header().Set("content-type", "application/problem+json")
+
+	var httpError ierrors.HttpError
+	ok := errors.As(err, &httpError)
+
+	if !ok {
+		w.WriteHeader(ierrors.ServerErrorStatusCode)
+
+		return
 	}
+
 	w.WriteHeader(httpError.Code)
-	w.Write(httpError.PrintBody())
-	return
+
+	_, err = w.Write(httpError.PrintBody())
+	if err != nil {
+		panic(err)
+	}
 }

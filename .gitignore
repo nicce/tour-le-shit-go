@@ -1,10 +1,8 @@
-# gin hot reloading
-gin-bin
-
 # idea
 .idea
 
 .env
+bin/
 
 # Binary
 tour-le-shit-go
