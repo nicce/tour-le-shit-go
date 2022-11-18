@@ -23,8 +23,8 @@ For running the app with live reload support use [air](https://github.com/cosmtr
 
 For convenient use `.env` file in root folder. Check `.env.default` for default values
 
-| key             | description        |
-|-----------------|--------------------|
-| MEMBERS_MODE    | FILE, MOCK or PSQL |
-| PORT            | Server port        |
-| SCOREBOARD_MODE | FILE, MOCK or PSQL |
+| key             | description  |
+|-----------------|--------------|
+| MEMBERS_MODE    | MOCK or PSQL |
+| PORT            | Server port  |
+| SCOREBOARD_MODE | MOCK or PSQL |

@@ -7,7 +7,6 @@ import (
 	"tour-le-shit-go/internal/env"
 	"tour-le-shit-go/internal/game"
 	gameDb "tour-le-shit-go/internal/game/db"
-	gameFile "tour-le-shit-go/internal/game/file"
 	gameMock "tour-le-shit-go/internal/game/mock"
 	gameModel "tour-le-shit-go/internal/game/model"
 	"tour-le-shit-go/internal/players"
@@ -50,8 +49,6 @@ func createScoreboardRoute(appEnv env.AppEnv) scoreboard.Route {
 	var repository game.Repository
 
 	switch appEnv.ScoreboardMode {
-	case "FILE":
-		repository = gameFile.NewRepository("game.json")
 	case "PSQL":
 		database, err := sql.Open("postgres", "user=user dbname=tourleshit password=password sslmode=disable")
 		if err != nil {
@@ -74,8 +71,6 @@ func createMembersRoute(appEnv env.AppEnv) members.Route {
 	var repository players.Repository
 
 	switch appEnv.MembersMode {
-	case "FILE":
-		panic("not yet implemented")
 	case "PSQL":
 		panic("not yet implemented")
 	case "MOCK":

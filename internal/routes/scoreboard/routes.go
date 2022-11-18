@@ -12,7 +12,7 @@ import (
 
 type Scoreboard struct {
 	Season  int      `json:"season"`
-	Players []Player `json:"game"`
+	Players []Player `json:"players"`
 }
 
 type Player struct {
