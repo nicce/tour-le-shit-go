@@ -57,7 +57,7 @@ func createScoreboardRoute(appEnv env.AppEnv) scoreboard.Route {
 
 		repository = gameDb.NewRepository(database)
 	case "MOCK":
-		repository = gameMock.NewRepository([]gameModel.Player{})
+		repository = gameMock.NewRepository([]gameModel.PlayerScore{})
 	default:
 		panic(fmt.Sprintf("invalid scoreboard mode %s", appEnv.ScoreboardMode))
 	}

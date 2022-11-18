@@ -49,12 +49,12 @@ func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Reques
 	})
 
 	slice := make([]Player, 0)
-	for i, player := range p {
+	for i, playerScore := range p {
 		slice = append(slice, Player{
-			Name:       player.Name,
-			Points:     player.Points,
+			Name:       playerScore.Player.Name,
+			Points:     playerScore.Points,
 			Position:   i + 1,
-			LastPlayed: player.LastPlayed,
+			LastPlayed: playerScore.LastPlayed,
 		})
 	}
 

@@ -5,13 +5,13 @@ import (
 )
 
 type MockedRepository struct {
-	Players []model.Player
+	Players []model.PlayerScore
 }
 
-func NewRepository(players []model.Player) *MockedRepository {
+func NewRepository(players []model.PlayerScore) *MockedRepository {
 	return &MockedRepository{Players: players}
 }
 
-func (r *MockedRepository) GetScore(season int) ([]model.Player, error) {
+func (r *MockedRepository) GetScore(season int) ([]model.PlayerScore, error) {
 	return r.Players, nil
 }

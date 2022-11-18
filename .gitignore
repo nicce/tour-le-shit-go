@@ -1,3 +1,6 @@
+# air hot reloading folder
+tmp/
+
 # idea
 .idea
 

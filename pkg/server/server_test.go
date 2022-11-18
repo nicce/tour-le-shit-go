@@ -25,7 +25,7 @@ const MemberName = "Test"
 func TestScoreboardRoute(t *testing.T) {
 	t.Parallel()
 
-	beforeEach := func(p []gameModel.Player) *httptest.Server {
+	beforeEach := func(p []gameModel.PlayerScore) *httptest.Server {
 		gameRepository := gameMock.NewRepository(p)
 		gameService := game.NewService(gameRepository)
 		scoreboardRoute := scoreboard.NewScoreboardRoute(gameService)
@@ -40,7 +40,7 @@ func TestScoreboardRoute(t *testing.T) {
 	t.Run("returns 400 due to no query param", func(t *testing.T) {
 		t.Parallel()
 		// arrange
-		srv := beforeEach([]gameModel.Player{})
+		srv := beforeEach([]gameModel.PlayerScore{})
 		defer srv.Close()
 
 		// act
@@ -62,7 +62,7 @@ func TestScoreboardRoute(t *testing.T) {
 	t.Run("returns 400 due to invalid query param", func(t *testing.T) {
 		t.Parallel()
 		// arrange
-		srv := beforeEach([]gameModel.Player{})
+		srv := beforeEach([]gameModel.PlayerScore{})
 		defer srv.Close()
 
 		// act
@@ -83,14 +83,20 @@ func TestScoreboardRoute(t *testing.T) {
 	t.Run("returns 200", func(t *testing.T) {
 		t.Parallel()
 		// arrange
-		p := make([]gameModel.Player, 0)
-		p = append(p, gameModel.Player{
-			Name:       "Terminator",
+		p := make([]gameModel.PlayerScore, 0)
+		p = append(p, gameModel.PlayerScore{
+			Player: playersModel.Player{
+				Id:   "1",
+				Name: "Terminator",
+			},
 			Points:     444,
 			LastPlayed: "2022-11-17",
 		})
-		p = append(p, gameModel.Player{
-			Name:       "Chuck Norris",
+		p = append(p, gameModel.PlayerScore{
+			Player: playersModel.Player{
+				Id:   "1",
+				Name: "Chuck Norris",
+			},
 			Points:     666,
 			LastPlayed: "2022-11-17",
 		})
