@@ -10,6 +10,7 @@ import (
 	gameMock "tour-le-shit-go/internal/game/mock"
 	gameModel "tour-le-shit-go/internal/game/model"
 	"tour-le-shit-go/internal/players"
+	playersDb "tour-le-shit-go/internal/players/db"
 	playersMock "tour-le-shit-go/internal/players/mock"
 	playersModel "tour-le-shit-go/internal/players/model"
 	"tour-le-shit-go/internal/routes/members"
@@ -50,7 +51,7 @@ func createScoreboardRoute(appEnv env.AppEnv) scoreboard.Route {
 
 	switch appEnv.ScoreboardMode {
 	case "PSQL":
-		database, err := sql.Open("postgres", "user=user dbname=tourleshit password=password sslmode=disable")
+		database, err := sql.Open("postgres", fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", appEnv.Db.Username, appEnv.Db.Name, appEnv.Db.Password))
 		if err != nil {
 			panic(err)
 		}
@@ -72,7 +73,12 @@ func createMembersRoute(appEnv env.AppEnv) members.Route {
 
 	switch appEnv.MembersMode {
 	case "PSQL":
-		panic("not yet implemented")
+		database, err := sql.Open("postgres", fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", appEnv.Db.Username, appEnv.Db.Name, appEnv.Db.Password))
+		if err != nil {
+			panic(err)
+		}
+
+		repository = playersDb.NewRepository(database)
 	case "MOCK":
 		repository = playersMock.NewRepository([]playersModel.Player{})
 	default:
