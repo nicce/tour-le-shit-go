@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"tour-le-shit-go/internal/ierrors"
 	"tour-le-shit-go/internal/players/model"
@@ -28,24 +29,23 @@ func NewRepository(db *sql.DB) *PostgresRepository {
 func (r *PostgresRepository) GetPlayerById(id string) (*model.Player, error) {
 	stmt, err := r.db.Prepare(GetPlayerByIdQuery)
 	if err != nil {
-		return &model.Player{}, ierrors.DbError{
+		return nil, ierrors.DbError{
 			Message: fmt.Sprintf("error preparing statement %v", err),
 		}
-	}
-
-	row := stmt.QueryRow(id)
-
-	if row == nil {
-		return nil, nil
 	}
 
 	var playerId string
 
 	var playerName string
 
-	err = row.Scan(&playerId, &playerName)
+	err = stmt.QueryRow(id).Scan(&playerId, &playerName)
+
 	if err != nil {
-		return &model.Player{}, ierrors.DbError{
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, ierrors.DbError{
 			Message: fmt.Sprintf("error scanning result %v", err),
 		}
 	}

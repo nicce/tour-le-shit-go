@@ -94,7 +94,7 @@ func (r *Route) handleGetRequest(w http.ResponseWriter, req *http.Request) error
 
 	scores, err := r.s.GetPlayerScoreBySeason(playerId, sint)
 	if err != nil {
-		return ierrors.HttpError{Code: ierrors.ServerErrorStatusCode, Message: "server error, please contact support", InnerError: err.Error()}
+		return fmt.Errorf("error fetching player score: %w", err)
 	}
 
 	if len(scores) == 0 {
@@ -171,11 +171,7 @@ func (r *Route) handlePutRequest(w http.ResponseWriter, req *http.Request) error
 	})
 
 	if err != nil {
-		return ierrors.HttpError{
-			Code:       ierrors.ServerErrorStatusCode,
-			Message:    "error adding score",
-			InnerError: err.Error(),
-		}
+		return fmt.Errorf("error adding score: %w", err)
 	}
 
 	w.WriteHeader(CreatedStatusCode)
