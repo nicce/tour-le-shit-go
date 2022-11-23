@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
+const GetPlayerByIdQuery = "SELECT id, name FROM player WHERE id = $1"
 const GetCountPlayersByIdQuery = "SELECT count(*) FROM player WHERE id = $1"
 const GetCountPlayersByNameQuery = "SELECT count(*) FROM player WHERE name = $1"
 const GetPlayersQuery = "SELECT id, name from player ORDER BY name;"
@@ -22,6 +23,37 @@ type PostgresRepository struct {
 
 func NewRepository(db *sql.DB) *PostgresRepository {
 	return &PostgresRepository{db: db}
+}
+
+func (r *PostgresRepository) GetPlayerById(id string) (*model.Player, error) {
+	stmt, err := r.db.Prepare(GetPlayerByIdQuery)
+	if err != nil {
+		return &model.Player{}, ierrors.DbError{
+			Message: fmt.Sprintf("error preparing statement %v", err),
+		}
+	}
+
+	row := stmt.QueryRow(id)
+
+	if row == nil {
+		return nil, nil
+	}
+
+	var playerId string
+
+	var playerName string
+
+	err = row.Scan(&playerId, &playerName)
+	if err != nil {
+		return &model.Player{}, ierrors.DbError{
+			Message: fmt.Sprintf("error scanning result %v", err),
+		}
+	}
+
+	return &model.Player{
+		Id:   playerId,
+		Name: playerName,
+	}, nil
 }
 
 func (r *PostgresRepository) GetPlayers() ([]model.Player, error) {

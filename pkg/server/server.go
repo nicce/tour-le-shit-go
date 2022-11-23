@@ -9,6 +9,7 @@ import (
 	"tour-le-shit-go/internal/logger"
 	"tour-le-shit-go/internal/routes/members"
 	"tour-le-shit-go/internal/routes/scoreboard"
+	"tour-le-shit-go/internal/routes/scores"
 
 	"github.com/gorilla/mux"
 )
@@ -20,6 +21,7 @@ type Server struct {
 type Config struct {
 	MembersRoute    members.Route
 	Port            string
+	ScoresRoute     scores.Route
 	ScoreboardRoute scoreboard.Route
 }
 
@@ -33,6 +35,8 @@ func New(cfg Config) *http.Server {
 	router := mux.NewRouter()
 
 	router.Handle("/scoreboard", rootHandler(cfg.ScoreboardRoute.ScoreboardRouteHandler))
+	router.Handle("/scores", rootHandler(cfg.ScoresRoute.ScoresRouteHandler))
+	router.Handle("/scores/{id}", rootHandler(cfg.ScoresRoute.ScoreRouteHandler))
 	router.Handle("/members/{id}", rootHandler(cfg.MembersRoute.MemberRouteHandler))
 	router.Handle("/members", rootHandler(cfg.MembersRoute.MembersRouteHandler))
 

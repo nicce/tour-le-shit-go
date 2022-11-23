@@ -6,6 +6,7 @@ import (
 )
 
 type Repository interface {
+	GetPlayerById(id string) (*model.Player, error)
 	GetPlayers() ([]model.Player, error)
 	CreatePlayer(name string) ([]model.Player, error)
 	UpdatePlayer(id, name string) ([]model.Player, error)

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
-	"tour-le-shit-go/internal/game"
 	"tour-le-shit-go/internal/ierrors"
+	"tour-le-shit-go/internal/score"
 )
 
 type Scoreboard struct {
@@ -22,12 +22,12 @@ type Player struct {
 	LastPlayed string `json:"lastPlayed"`
 }
 
-func NewScoreboardRoute(s game.Service) Route {
+func NewScoreboardRoute(s score.Service) Route {
 	return Route{s}
 }
 
 type Route struct {
-	s game.Service
+	s score.Service
 }
 
 func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Request) error {
@@ -38,20 +38,21 @@ func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Reques
 		return ierrors.HttpError{Code: ierrors.BadRequestStatusCode, Message: fmt.Sprintf("invalid season query param, expected integer got %s", season)}
 	}
 
-	p, err := route.s.GetScoreBySeason(sint)
+	sb, err := route.s.GetScoreboard(sint)
 
 	if err != nil {
 		return ierrors.HttpError{Code: ierrors.ServerErrorStatusCode, Message: "server error, please contact support", InnerError: err.Error()}
 	}
 
-	sort.Slice(p, func(i, j int) bool {
-		return p[i].Points > p[j].Points
+	sortedPlayerList := sb.Players
+	sort.Slice(sortedPlayerList, func(i, j int) bool {
+		return sortedPlayerList[i].Points > sortedPlayerList[j].Points
 	})
 
 	slice := make([]Player, 0)
-	for i, playerScore := range p {
+	for i, playerScore := range sortedPlayerList {
 		slice = append(slice, Player{
-			Name:       playerScore.Player.Name,
+			Name:       playerScore.Name,
 			Points:     playerScore.Points,
 			Position:   i + 1,
 			LastPlayed: playerScore.LastPlayed,
@@ -60,7 +61,7 @@ func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Reques
 
 	w.Header().Set("Content-Type", "application/json")
 
-	err = json.NewEncoder(w).Encode(Scoreboard{Season: sint, Players: slice})
+	err = json.NewEncoder(w).Encode(Scoreboard{Season: sb.Season, Players: slice})
 	if err != nil {
 		return fmt.Errorf("unknown error %w", err)
 	}

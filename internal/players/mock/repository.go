@@ -16,6 +16,19 @@ func NewRepository(members []model.Player) *MockedRepository {
 	return &MockedRepository{members: members}
 }
 
+func (r *MockedRepository) GetPlayerById(id string) (*model.Player, error) {
+	for _, m := range r.members {
+		if m.Id == id {
+			return &model.Player{
+				Id:   m.Id,
+				Name: m.Name,
+			}, nil
+		}
+	}
+
+	return nil, nil
+}
+
 func (r *MockedRepository) GetPlayers() ([]model.Player, error) {
 	return r.members, nil
 }

@@ -4,24 +4,14 @@ CREATE TABLE player (
 	PRIMARY KEY(id)
 );
 
-CREATE TABLE scoreboard (
-	points INT,
-	player_id VARCHAR(36),
-	holder_of_snek BOOLEAN,
-	last_played VARCHAR(10),
-	season INT,
-	FOREIGN KEY(player_id) REFERENCES player(id) ON DELETE CASCADE
-);
-
 CREATE TABLE score (
 	id VARCHAR(36),
 	player_id VARCHAR(36),
 	points INT,
-	holder_of_snek BOOLEAN,
 	birdies INT,
 	eagles INT,
 	muligans INT,
 	day VARCHAR(10),
-	seasont INT,
+	season INT,
 	FOREIGN KEY(player_id) REFERENCES player(id) ON DELETE CASCADE
 );

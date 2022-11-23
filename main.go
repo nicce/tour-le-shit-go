@@ -5,21 +5,25 @@ import (
 	"fmt"
 	"log"
 	"tour-le-shit-go/internal/env"
-	"tour-le-shit-go/internal/game"
-	gameDb "tour-le-shit-go/internal/game/db"
-	gameMock "tour-le-shit-go/internal/game/mock"
-	gameModel "tour-le-shit-go/internal/game/model"
 	"tour-le-shit-go/internal/players"
 	playersDb "tour-le-shit-go/internal/players/db"
 	playersMock "tour-le-shit-go/internal/players/mock"
 	playersModel "tour-le-shit-go/internal/players/model"
 	"tour-le-shit-go/internal/routes/members"
 	"tour-le-shit-go/internal/routes/scoreboard"
+	"tour-le-shit-go/internal/routes/scores"
+	"tour-le-shit-go/internal/score"
+	scoreDb "tour-le-shit-go/internal/score/db"
+	scoreMock "tour-le-shit-go/internal/score/mock"
+	scoreModel "tour-le-shit-go/internal/score/model"
 	"tour-le-shit-go/pkg/server"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
+
+const MockMode = "MOCK"
+const PsqlMode = "PSQL"
 
 func main() {
 	err := godotenv.Load(".env", ".env.default")
@@ -29,13 +33,45 @@ func main() {
 
 	appEnv := env.GetAppEnv()
 
-	scoreboardRoute := createScoreboardRoute(appEnv)
-	membersRoute := createMembersRoute(appEnv)
+	var playersRepository players.Repository
+
+	switch appEnv.MembersMode {
+	case PsqlMode:
+		database, err := sql.Open("postgres", fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", appEnv.Db.Username, appEnv.Db.Name, appEnv.Db.Password))
+		if err != nil {
+			panic(err)
+		}
+
+		playersRepository = playersDb.NewRepository(database)
+	case MockMode:
+		playersRepository = playersMock.NewRepository([]playersModel.Player{})
+	default:
+		panic(fmt.Sprintf("invalid members mode %s", appEnv.MembersMode))
+	}
+
+	var scoreRepository score.Repository
+
+	switch appEnv.ScoreMode {
+	case PsqlMode:
+		database, err := sql.Open("postgres", fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", appEnv.Db.Username, appEnv.Db.Name, appEnv.Db.Password))
+		if err != nil {
+			panic(err)
+		}
+
+		scoreRepository = scoreDb.NewRepository(database, playersRepository)
+	case MockMode:
+		scoreRepository = scoreMock.NewRepository([]scoreModel.Score{})
+	}
+
+	scoreService := score.NewService(scoreRepository)
+
+	playersService := players.NewService(playersRepository)
 
 	config := server.Config{
-		ScoreboardRoute: scoreboardRoute,
+		ScoresRoute:     scores.NewScoresRoute(scoreService),
+		ScoreboardRoute: scoreboard.NewScoreboardRoute(scoreService),
 		Port:            appEnv.Port,
-		MembersRoute:    membersRoute,
+		MembersRoute:    members.NewMemberRoute(playersService),
 	}
 
 	srv := server.New(config)
@@ -44,48 +80,4 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func createScoreboardRoute(appEnv env.AppEnv) scoreboard.Route {
-	var repository game.Repository
-
-	switch appEnv.ScoreboardMode {
-	case "PSQL":
-		database, err := sql.Open("postgres", fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", appEnv.Db.Username, appEnv.Db.Name, appEnv.Db.Password))
-		if err != nil {
-			panic(err)
-		}
-
-		repository = gameDb.NewRepository(database)
-	case "MOCK":
-		repository = gameMock.NewRepository([]gameModel.PlayerScore{})
-	default:
-		panic(fmt.Sprintf("invalid scoreboard mode %s", appEnv.ScoreboardMode))
-	}
-
-	service := game.NewService(repository)
-
-	return scoreboard.NewScoreboardRoute(service)
-}
-
-func createMembersRoute(appEnv env.AppEnv) members.Route {
-	var repository players.Repository
-
-	switch appEnv.MembersMode {
-	case "PSQL":
-		database, err := sql.Open("postgres", fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", appEnv.Db.Username, appEnv.Db.Name, appEnv.Db.Password))
-		if err != nil {
-			panic(err)
-		}
-
-		repository = playersDb.NewRepository(database)
-	case "MOCK":
-		repository = playersMock.NewRepository([]playersModel.Player{})
-	default:
-		panic(fmt.Sprintf("invalid members mode %s", appEnv.MembersMode))
-	}
-
-	service := players.NewService(repository)
-
-	return members.NewMemberRoute(service)
 }

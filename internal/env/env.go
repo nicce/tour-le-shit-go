@@ -3,10 +3,10 @@ package env
 import "os"
 
 type AppEnv struct {
-	MembersMode    string
-	Port           string
-	ScoreboardMode string
-	Db             Db
+	MembersMode string
+	Port        string
+	ScoreMode   string
+	Db          Db
 }
 
 type Db struct {
@@ -32,9 +32,9 @@ func GetAppEnv() AppEnv {
 	}
 
 	return AppEnv{
-		MembersMode:    getEnvVariable("MEMBERS_MODE"),
-		Port:           getEnvVariable("PORT"),
-		ScoreboardMode: getEnvVariable("SCOREBOARD_MODE"),
-		Db:             db,
+		MembersMode: getEnvVariable("MEMBERS_MODE"),
+		Port:        getEnvVariable("PORT"),
+		ScoreMode:   getEnvVariable("SCORE_MODE"),
+		Db:          db,
 	}
 }

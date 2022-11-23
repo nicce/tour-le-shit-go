@@ -32,7 +32,7 @@ func NewMemberRoute(s players.Service) Route {
 const ContentTypeKey = "Content-Type"
 const ContentTypeValue = "application/json"
 
-func (r Route) MembersRouteHandler(w http.ResponseWriter, req *http.Request) error {
+func (r *Route) MembersRouteHandler(w http.ResponseWriter, req *http.Request) error {
 	switch req.Method {
 	case "GET":
 		return r.handleGetRequest(w)
@@ -47,7 +47,7 @@ func (r Route) MembersRouteHandler(w http.ResponseWriter, req *http.Request) err
 	}
 }
 
-func (r Route) MemberRouteHandler(w http.ResponseWriter, req *http.Request) error {
+func (r *Route) MemberRouteHandler(w http.ResponseWriter, req *http.Request) error {
 	switch req.Method {
 	case "POST":
 		return r.handlePostRequest(w, req)
@@ -62,7 +62,7 @@ func (r Route) MemberRouteHandler(w http.ResponseWriter, req *http.Request) erro
 	}
 }
 
-func (r Route) handleGetRequest(w http.ResponseWriter) error {
+func (r *Route) handleGetRequest(w http.ResponseWriter) error {
 	members, err := r.s.GetMembers()
 	if err != nil {
 		return fmt.Errorf("error fetching members %w", err)
@@ -86,7 +86,7 @@ func (r Route) handleGetRequest(w http.ResponseWriter) error {
 	return nil
 }
 
-func (r Route) handlePutReqeuest(w http.ResponseWriter, req *http.Request) error {
+func (r *Route) handlePutReqeuest(w http.ResponseWriter, req *http.Request) error {
 	b, err := io.ReadAll(req.Body)
 	if err != nil {
 		return ierrors.HttpError{
@@ -122,7 +122,7 @@ func (r Route) handlePutReqeuest(w http.ResponseWriter, req *http.Request) error
 	return nil
 }
 
-func (r Route) handlePostRequest(w http.ResponseWriter, req *http.Request) error {
+func (r *Route) handlePostRequest(w http.ResponseWriter, req *http.Request) error {
 	vars := mux.Vars(req)
 
 	b, err := io.ReadAll(req.Body)
@@ -160,7 +160,7 @@ func (r Route) handlePostRequest(w http.ResponseWriter, req *http.Request) error
 	return nil
 }
 
-func (r Route) handleDeleteRequest(w http.ResponseWriter, req *http.Request) error {
+func (r *Route) handleDeleteRequest(w http.ResponseWriter, req *http.Request) error {
 	id := mux.Vars(req)["id"]
 	members, err := r.s.DeleteMember(id)
 
