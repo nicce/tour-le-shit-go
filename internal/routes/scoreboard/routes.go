@@ -16,6 +16,7 @@ type Scoreboard struct {
 }
 
 type Player struct {
+	Id         string `json:"id"`
 	Name       string `json:"name"`
 	Position   int    `json:"position"`
 	Points     int    `json:"points"`
@@ -52,6 +53,7 @@ func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Reques
 	slice := make([]Player, 0)
 	for i, playerScore := range sortedPlayerList {
 		slice = append(slice, Player{
+			Id:         playerScore.Id,
 			Name:       playerScore.Name,
 			Points:     playerScore.Points,
 			Position:   i + 1,
