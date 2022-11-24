@@ -78,8 +78,7 @@ func main() {
 
 	srv := server.New(config)
 
-	err = srv.ListenAndServe()
-	if err != nil {
+	if err = srv.ListenAndServe(); err != nil {
 		panic(err)
 	}
 }
