@@ -61,8 +61,8 @@ func (fn rootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/problem+json")
 
 	var httpError ierrors.HttpError
-	ok := errors.As(err, &httpError)
 
+	ok := errors.As(err, &httpError)
 	if !ok {
 		w.WriteHeader(ierrors.ServerErrorStatusCode)
 

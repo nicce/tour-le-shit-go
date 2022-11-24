@@ -47,6 +47,10 @@ func (route *Route) ScoreboardRouteHandler(w http.ResponseWriter, r *http.Reques
 
 	sortedPlayerList := sb.Players
 	sort.Slice(sortedPlayerList, func(i, j int) bool {
+		if sortedPlayerList[i].Points == sortedPlayerList[j].Points {
+			return sortedPlayerList[i].LastPlayed > sortedPlayerList[j].LastPlayed
+		}
+
 		return sortedPlayerList[i].Points > sortedPlayerList[j].Points
 	})
 

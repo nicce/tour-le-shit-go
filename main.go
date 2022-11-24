@@ -61,6 +61,8 @@ func main() {
 		scoreRepository = scoreDb.NewRepository(database, playersRepository)
 	case MockMode:
 		scoreRepository = scoreMock.NewRepository([]scoreModel.Score{})
+	default:
+		panic(fmt.Sprintf("invalid score mode %s", appEnv.ScoreMode))
 	}
 
 	scoreService := score.NewService(scoreRepository)
