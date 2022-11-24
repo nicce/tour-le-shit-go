@@ -11,7 +11,7 @@ REVISION_ID := $(shell git rev-parse HEAD)
 SHORT_SHA := $(shell git rev-parse --short HEAD)
 TAG_NAME := $(shell git describe --exact-match --tags 2> /dev/null)
 VERSION := $(if ${TAG_NAME},${TAG_NAME},"unversioned")
-VERSION_PATH := github.com/ingka-group-digital/${REPO_NAME}/internal/version
+VERSION_PATH := github.com/nicce/${REPO_NAME}/version
 
 LICENSED_VERSION := 3.3.1
 LICENSED_PATH := bin/licensed_$(LICENSED_VERSION)/licensed
