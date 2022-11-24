@@ -25,10 +25,15 @@ const InsertScoreQuery = `
 `
 
 const GetScoreboardQuery = `
-	SELECT COALESCE((sum(s.points) + 2*SUM(s.birdies) + 3*SUM(s.eagles) - 3*SUM(s.muligans)), 0) as points, 
-	       p.id as player_id, p.name, COALESCE(MAX(s.day), '')as last_played
-	FROM score s RIGHT JOIN player p ON (s.player_id = p.id) 
-	WHERE season=$1 OR season IS NULL GROUP BY p.id, p.name;
+	WITH player_points as (
+        SELECT s.player_id, sum(s.points) + 2*SUM(s.birdies) + 3*SUM(s.eagles) - 3*SUM(s.muligans) AS points, MAX(s.day) AS day
+        FROM score s
+        WHERE season=$1
+        GROUP BY s.player_id
+	)
+	SELECT COALESCE(pp.points, 0), p.id AS player_id, p.name, COALESCE(pp.day, '') AS last_played 
+	FROM player_points pp 
+	RIGHT JOIN player p ON (pp.player_id = p.id);
 `
 
 type PostgresRepository struct {
